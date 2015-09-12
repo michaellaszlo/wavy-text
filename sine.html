@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> Sine scroller </title>
+<script
+ src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"></script>
+<script>
+var text = 'Savor  the  delightful  flavor  of  Bubba-Cola',
+    canvasWidth = 750,
+    canvasHeight = 300;
+
+WebFont.load({
+  google: {
+    families: ['Source Sans Pro']
+  },
+  active: function () {  // Gets called when font loading is done.
+    var canvas = document.getElementsByTagName('canvas')[0],
+        context = canvas.getContext('2d'),
+        yZero = canvasHeight / 2,           // Set axis position and amplitude
+        amplitude = canvasHeight * 1 / 4,  // according to canvas dimensions.
+        textColor ='#fff',
+        backgroundColor = '#000';
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    context.font = "32px 'Source Sans Pro', monospace";
+
+    var pos = canvasWidth;  // Split the text into characters.
+    var units = text.split('').map(function (char) {
+      var width = context.measureText(char).width,
+          unit = { char: char, width: width, pos: pos };
+      pos += width;  // Calculate the pixel offset of each character.
+      return unit;
+    });
+
+    var running = true,
+        lapTime;  // Set this before the first animation call.
+
+    function animate() {
+      var currentTime = Date.now(),  // Calculate pixel position of the char.
+          dp = (currentTime - lapTime) / 15;
+      lapTime = currentTime;
+      context.fillStyle = backgroundColor;
+      context.fillRect(0, 0, canvasWidth, canvasHeight);
+      units.forEach(function (unit) {
+        unit.pos -= dp;  // Update char position.
+        if (unit.pos < -unit.width) {
+          unit.pos += canvasWidth + 50;  // Wrap around from left to right.
+        }
+        var y = Math.sin(unit.pos / 45) * amplitude;
+        context.fillStyle = textColor;
+        context.fillText(unit.char, unit.pos, yZero + y);
+      });
+      if (running) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    document.getElementById('stopButton').onclick = function () {
+      running = false;
+    };
+
+    lapTime = Date.now();
+    requestAnimationFrame(animate);
+  }
+});
+</script>
+</head>
+<body>
+
+<canvas></canvas>
+
+<button id="stopButton"> stop </button>
+
+</body>
+</html>
