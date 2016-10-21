@@ -45,8 +45,15 @@ var WavyText = (function () {
       }
     }
 
-    document.getElementById('stopButton').onclick = function () {
-      running = false;
+    document.getElementById('pauseButton').onclick = function () {
+      if (running) {
+        running = false;
+        this.innerHTML = 'resume';
+      } else {
+        running = true;
+        this.innerHTML = 'pause';
+        requestAnimationFrame(animate);
+      }
     };
 
     lapTime = Date.now();
