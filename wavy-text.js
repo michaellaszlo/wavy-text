@@ -1,50 +1,62 @@
 var WavyText = (function () {
-  var canvasWidth = 750,
-      canvasHeight = 300,
+  var running,
+      lapTime,
+      canvas,
+      context,
+      characterBoxes,
+      colors = {
+        text: '#fff',
+        background: '#000'
+      },
+      dimensions = {
+        width: 750,
+        height: 300
+      },
       text = 'Savor  the  delightful  flavor  of  Bubba-Cola';
 
-  function start() {
-    var canvas = document.getElementsByTagName('canvas')[0],
-        context = canvas.getContext('2d'),
-        yZero = canvasHeight / 2,           // Set axis position and amplitude
-        amplitude = canvasHeight * 1 / 4,  // according to canvas dimensions.
-        textColor ='#fff',
-        backgroundColor = '#000';
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    context.font = "32px 'Source Sans Pro', monospace";
-
-    var pos = canvasWidth;  // Split the text into characters.
-    var units = text.split('').map(function (char) {
-      var width = context.measureText(char).width,
-          unit = { char: char, width: width, pos: pos };
-      pos += width;  // Calculate the pixel offset of each character.
-      return unit;
-    });
-
-    var running = true,
-        lapTime;  // Set this before the first animation call.
-
-    function animate() {
-      var currentTime = Date.now(),  // Calculate pixel position of the char.
-          dp = (currentTime - lapTime) / 15;
-      lapTime = currentTime;
-      context.fillStyle = backgroundColor;
-      context.fillRect(0, 0, canvasWidth, canvasHeight);
-      units.forEach(function (unit) {
-        unit.pos -= dp;  // Update char position.
-        if (unit.pos < -unit.width) {
-          unit.pos += canvasWidth + 50;  // Wrap around from left to right.
-        }
-        var y = Math.sin(unit.pos / 45) * amplitude;
-        context.fillStyle = textColor;
-        context.fillText(unit.char, unit.pos, yZero + y);
-      });
-      if (running) {
-        requestAnimationFrame(animate);
+  function animate() {
+    var yZero = dimensions.height / 2,
+        amplitude = dimensions.height/4,
+        currentTime = Date.now(),
+        elapsed = (currentTime - lapTime) / 15;
+    lapTime = currentTime;
+    context.fillStyle = colors.background;
+    context.fillRect(0, 0, dimensions.width, dimensions.height);
+    characterBoxes.forEach(function (box) {
+      box.pos -= elapsed;  // Update char position.
+      if (box.pos < -box.width) {
+        box.pos += dimensions.width + 50;  // Wrap around from left to right.
       }
+      var y = Math.sin(box.pos / 45) * amplitude;
+      context.fillStyle = colors.text;
+      context.fillText(box.char, box.pos, dimensions.height/2 + y);
+    });
+    if (running) {
+      requestAnimationFrame(animate);
     }
+  }
 
+  function startAnimation() {
+    running = true;
+    lapTime = Date.now();
+    animate();
+  }
+
+  function load() {
+    var pos;
+    canvas = document.getElementsByTagName('canvas')[0];
+    context = canvas.getContext('2d');
+    canvas.width = dimensions.width;
+    canvas.height = dimensions.height;
+    // Calculate the pixel offset of each character in the text.
+    context.font = "32px 'Source Sans Pro', monospace";
+    pos = canvas.width;
+    characterBoxes = text.split('').map(function (char) {
+      var width = context.measureText(char).width,
+          box = { char: char, width: width, pos: pos };
+      pos += width;
+      return box;
+    });
     document.getElementById('pauseButton').onclick = function () {
       if (running) {
         running = false;
@@ -52,16 +64,14 @@ var WavyText = (function () {
       } else {
         running = true;
         this.innerHTML = 'pause';
-        requestAnimationFrame(animate);
+        startAnimation();
       }
     };
-
-    lapTime = Date.now();
-    requestAnimationFrame(animate);
+    startAnimation();
   }
 
   return {
-    start: start
+    load: load
   };
 }());
 
@@ -69,5 +79,5 @@ WebFont.load({
   google: {
     families: ['Source Sans Pro']
   },
-  active: WavyText.start
+  active: WavyText.load
 });
