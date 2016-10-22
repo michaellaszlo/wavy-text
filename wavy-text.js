@@ -4,6 +4,8 @@ var WavyText = (function () {
       canvas,
       context,
       characterBoxes,
+      buttons = {
+      },
       colors = {
         dark: '#082445',
         pale: '#ebecde'
@@ -42,6 +44,17 @@ var WavyText = (function () {
     animate();
   }
 
+  function pause() {
+    if (running) {
+      running = false;
+      this.innerHTML = 'resume';
+    } else {
+      running = true;
+      this.innerHTML = 'pause';
+      startAnimation();
+    }
+  }
+
   function load() {
     var pos;
     canvas = document.getElementsByTagName('canvas')[0];
@@ -57,16 +70,8 @@ var WavyText = (function () {
       pos += width;
       return box;
     });
-    document.getElementById('pauseButton').onclick = function () {
-      if (running) {
-        running = false;
-        this.innerHTML = 'resume';
-      } else {
-        running = true;
-        this.innerHTML = 'pause';
-        startAnimation();
-      }
-    };
+    buttons.pause = document.getElementById('pauseButton');
+    buttons.pause.onclick = canvas.onclick = pause;
     colors.background = colors.pale;
     colors.text = colors.dark;
     startAnimation();
