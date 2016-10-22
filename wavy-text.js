@@ -6,6 +6,10 @@ var WavyText = (function () {
       characterBoxes,
       buttons = {
       },
+      inversion = {
+        dark: 'pale',
+        pale: 'dark'
+      },
       colors = {
         dark: '#082445',
         pale: '#ebecde'
@@ -47,12 +51,18 @@ var WavyText = (function () {
   function pause() {
     if (running) {
       running = false;
-      this.innerHTML = 'resume';
+      buttons.pause.innerHTML = 'resume';
     } else {
       running = true;
-      this.innerHTML = 'pause';
+      buttons.pause.innerHTML = 'pause';
       startAnimation();
     }
+  }
+
+  function invert() {
+    colors.background = invertButton.style.color = colors[inversion.state];
+    inversion.state = inversion[inversion.state];
+    colors.text = invertButton.style.background = colors[inversion.state];
   }
 
   function load() {
@@ -72,8 +82,10 @@ var WavyText = (function () {
     });
     buttons.pause = document.getElementById('pauseButton');
     buttons.pause.onclick = canvas.onclick = pause;
-    colors.background = colors.pale;
-    colors.text = colors.dark;
+    buttons.invert = document.getElementById('invertButton');
+    buttons.invert.onclick = invert;
+    inversion.state = 'pale';
+    invert();
     startAnimation();
   }
 
