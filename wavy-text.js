@@ -5,8 +5,8 @@ var WavyText = (function () {
       context,
       characterBoxes,
       colors = {
-        text: '#fff',
-        background: '#000'
+        dark: '#082445',
+        pale: '#ebecde'
       },
       dimensions = {
         width: 750,
@@ -67,6 +67,8 @@ var WavyText = (function () {
         startAnimation();
       }
     };
+    colors.background = colors.pale;
+    colors.text = colors.dark;
     startAnimation();
   }
 

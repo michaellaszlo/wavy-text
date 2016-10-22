@@ -1,0 +1,21 @@
+* {
+  box-sizing: border-box;
+  font-family: sans-serif, 'Source Sans Pro';
+  color: #333;
+}
+
+#wrapper {
+  width: 760px;
+}
+
+.button {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 2px solid #666;
+  border-radius: 4px;
+}
+.button:hover {
+  cursor: pointer;
+  border: 2px solid #333;
+  color: #000;
+}
