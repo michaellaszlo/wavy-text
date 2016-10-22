@@ -17,7 +17,13 @@ var WavyText = (function () {
         width: 750,
         height: 300
       },
-      speed = 2,
+      speed = {
+        // Speed calculation: value = coefficient * factor^exponent, with
+        //  exponent initialized to 0. The user clicks buttons to increment
+        //  or decrement exponent by 1.
+        factor: 1.1,
+        coefficient: 2
+      },
       text = 'Savor  the  delightful  flavor  of  Bubba-Cola';
 
   function animate() {
@@ -37,7 +43,7 @@ var WavyText = (function () {
     context.fillStyle = colors.background;
     context.fillRect(0, 0, dimensions.width, dimensions.height);
     characterBoxes.forEach(function (box) {
-      box.pos -= elapsed * speed;  // Update char position.
+      box.pos -= elapsed * speed.value;  // Update char position.
       if (box.pos < -box.width) {
         box.pos += dimensions.width + 50;  // Wrap around from left to right.
       }
@@ -59,7 +65,7 @@ var WavyText = (function () {
       buttons.pause.innerHTML = 'resume';
     } else {
       running = true;
-      buttons.pause.innerHTML = 'pause';
+      buttons.pause.innerHTML = 'freeze';
       startAnimation();
     }
   }
@@ -71,9 +77,10 @@ var WavyText = (function () {
     paint();
   }
 
-  function multiplySpeed(factor) {
-    speed *= factor;
-    formatted = '' + Math.floor(speed * 100) / 100;
+  function modifySpeed(increment) {
+    speed.exponent += increment;
+    speed.value = speed.coefficient * Math.pow(speed.factor, speed.exponent);
+    formatted = '' + Math.floor(speed.value * 100) / 100;
     if (formatted.indexOf('.') == -1) {
       formatted += '.00';
     } else if (formatted.indexOf('.') == formatted.length - 2) {
@@ -109,12 +116,13 @@ var WavyText = (function () {
     });
     buttons.pause = document.getElementById('pauseButton');
     buttons.pause.onclick = canvas.onclick = pause;
-    multiplySpeed(1);
+    speed.exponent = 0;
+    modifySpeed(0);
     document.getElementById('fasterButton').onclick = function () {
-      multiplySpeed(1.05);
+      modifySpeed(1);
     };
     document.getElementById('slowerButton').onclick = function () {
-      multiplySpeed(1 / 1.05);
+      modifySpeed(-1);
     };
     buttons.invert = document.getElementById('invertButton');
     buttons.invert.onclick = invert;
