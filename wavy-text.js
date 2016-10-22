@@ -21,11 +21,19 @@ var WavyText = (function () {
       text = 'Savor  the  delightful  flavor  of  Bubba-Cola';
 
   function animate() {
-    var yZero = dimensions.height / 2,
-        amplitude = dimensions.height/4,
-        currentTime = Date.now(),
+    var currentTime = Date.now(),
         elapsed = (currentTime - lapTime) / 15;
     lapTime = currentTime;
+    paint(elapsed);
+    if (running) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  function paint(elapsed) {
+    var yZero = dimensions.height / 2,
+        amplitude = dimensions.height/4,
+    elapsed = elapsed || 0;
     context.fillStyle = colors.background;
     context.fillRect(0, 0, dimensions.width, dimensions.height);
     characterBoxes.forEach(function (box) {
@@ -37,9 +45,6 @@ var WavyText = (function () {
       context.fillStyle = colors.text;
       context.fillText(box.char, box.pos, dimensions.height/2 + y);
     });
-    if (running) {
-      requestAnimationFrame(animate);
-    }
   }
 
   function startAnimation() {
@@ -63,6 +68,7 @@ var WavyText = (function () {
     colors.background = invertButton.style.color = colors[inversion.state];
     inversion.state = inversion[inversion.state];
     colors.text = invertButton.style.background = colors[inversion.state];
+    paint();
   }
 
   function load() {
