@@ -1,10 +1,13 @@
 var WavyText = (function () {
-  var running,
-      lapTime,
-      canvas,
+  var canvas,
       context,
       characterBoxes,
       buttons = {},
+      state = {
+        running: false,
+        lapTime: null,
+        leftEdge: null
+      },
       inversion = {
         dark: 'pale',
         pale: 'dark'
@@ -13,10 +16,6 @@ var WavyText = (function () {
         dark: '#082445',
         pale: '#ebecde'
       },
-      dimensions = {
-        width: 750,
-        height: 300
-      },
       speed = {
         // Speed calculation: value = coefficient * factor^exponent, with
         //  exponent initialized to 0. The user clicks buttons to increment
@@ -24,47 +23,60 @@ var WavyText = (function () {
         factor: 1.1,
         coefficient: 2
       },
-      text = 'Savor  the  delightful  flavor  of  Bubba-Cola';
+      layout = {
+        width: 750,
+        height: 300,
+        text: {
+          gap: 0.2,
+          value: 'Savor  the  delightful  flavor  of  Bubba-Cola'
+        }
+      };
 
   function animate() {
     var currentTime = Date.now(),
-        elapsed = (currentTime - lapTime) / 15;
-    lapTime = currentTime;
+        elapsed = (currentTime - state.lapTime) / 15;
+    state.lapTime = currentTime;
     paint(elapsed);
-    if (running) {
+    if (state.running) {
       requestAnimationFrame(animate);
     }
   }
 
   function paint(elapsed) {
-    var yZero = dimensions.height / 2,
-        amplitude = dimensions.height/4,
+    var xStart, span, x, y, i, box,
+        text = layout.text;
     elapsed = elapsed || 0;
     context.fillStyle = colors.background;
-    context.fillRect(0, 0, dimensions.width, dimensions.height);
-    characterBoxes.forEach(function (box) {
-      box.pos -= elapsed * speed.value;  // Update char position.
-      if (box.pos < -box.width) {
-        box.pos += dimensions.width + 50;  // Wrap around from left to right.
+    context.fillRect(0, 0, layout.width, layout.height);
+    state.leftEdge -= elapsed * speed.value;
+    while (state.leftEdge + text.width <= 0) {
+      state.leftEdge += text.span;
+    }
+    for (xStart = state.leftEdge; xStart < layout.width; xStart += text.span) {
+      x = xStart;
+      for (i = 0; i < characterBoxes.length; ++i) {
+        box = characterBoxes[i];
+        y = Math.sin(x / 45) * layout.amplitude;
+        context.fillStyle = colors.text;
+        context.fillText(box.char, x, layout.yZero + y);
+        x += box.width;
       }
-      var y = Math.sin(box.pos / 45) * amplitude;
-      context.fillStyle = colors.text;
-      context.fillText(box.char, box.pos, dimensions.height/2 + y);
-    });
+    }
   }
 
   function startAnimation() {
-    running = true;
-    lapTime = Date.now();
+    state.running = true;
+    state.lapTime = Date.now();
+    state.leftEdge = 0;
     animate();
   }
 
   function pause() {
-    if (running) {
-      running = false;
+    if (state.running) {
+      state.running = false;
       buttons.pause.innerHTML = 'resume';
     } else {
-      running = true;
+      state.running = true;
       buttons.pause.innerHTML = 'freeze';
       startAnimation();
     }
@@ -92,20 +104,22 @@ var WavyText = (function () {
   function load() {
     var elements,
         i,
-        pos;
+        textWidth;
     canvas = document.getElementsByTagName('canvas')[0];
     context = canvas.getContext('2d');
-    canvas.width = dimensions.width;
-    canvas.height = dimensions.height;
+    canvas.width = layout.width;
+    canvas.height = layout.height;
     // Calculate the pixel offset of each character in the text.
     context.font = "32px 'Droid Sans Mono', monospace";
-    pos = canvas.width;
-    characterBoxes = text.split('').map(function (char) {
+    textWidth = 0;
+    characterBoxes = layout.text.value.split('').map(function (char) {
       var width = context.measureText(char).width,
-          box = { char: char, width: width, pos: pos };
-      pos += width;
+          box = { char: char, width: width };
+      textWidth += width;
       return box;
     });
+    layout.text.width = textWidth;
+    layout.text.span = (1 + layout.text.gap) * textWidth;
     M.makeUnselectable(document.body);
     M.makeUnselectable(canvas);
     [ 'button', 'separator' ].forEach(function (className) {
@@ -128,6 +142,8 @@ var WavyText = (function () {
     buttons.invert.onclick = invert;
     inversion.state = 'pale';
     invert();
+    layout.yZero = layout.height / 2,
+    layout.amplitude = layout.height / 4;
     startAnimation();
   }
 
