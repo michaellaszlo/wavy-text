@@ -24,9 +24,9 @@ var WavyText = (function () {
         coefficient: 2
       },
       layout = {
-        width: 750,
-        height: 300,
-        amplitudeFactor: 1/5,
+        width: 830,
+        height: 250,
+        amplitudeFactor: 1/4,
         text: {
           gapFactor: 1/6,
           value: 'savor  the  delightful  flavor  of  fizzy cola'
@@ -100,11 +100,12 @@ var WavyText = (function () {
   function toggleWarp() {
     if (layout.text.warp) {
       layout.text.warp = false;
-      buttons.warp.innerHTML = 'do warp';
+      buttons.warp.innerHTML = '&nbsp;enable warp';
     } else {
       layout.text.warp = true;
-      buttons.warp.innerHTML = 'no warp';
+      buttons.warp.innerHTML = 'disable warp';
     }
+    paint();
   }
 
   function invertColors() {
