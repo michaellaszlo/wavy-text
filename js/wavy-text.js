@@ -29,7 +29,6 @@ var WavyText = (function () {
         amplitudeFactor: 1/5,
         text: {
           gapFactor: 1/6,
-          warp: true,
           value: 'savor  the  delightful  flavor  of  fizzy cola'
         }
       };
@@ -47,7 +46,7 @@ var WavyText = (function () {
   function paint(elapsed) {
     var xStart, span, x, y, i, box,
         text = layout.text,
-        scaleFactor;
+        yScale;
     elapsed = elapsed || 0;
     context.fillStyle = colors.background;
     context.fillRect(0, 0, layout.width, layout.height);
@@ -62,13 +61,19 @@ var WavyText = (function () {
         y = Math.sin(x / 45) * layout.amplitude;
         //console.log(box.char, x, y, Math.cos(x / 45));
         context.fillStyle = colors.text;
-        context.save();
-        context.translate(x, layout.yZero + y);
-        scaleFactor = Math.abs(y / layout.amplitude);
-        context.scale((scaleFactor + 3)/4, 2 - scaleFactor);
-        context.fillText(box.char, 0, 0);
-        context.restore();
-        x += box.width;
+        if (text.warp) {
+          context.save();
+          context.translate(x, layout.yZero + y);
+          yScale = Math.abs(y / layout.amplitude);
+          xScale = (yScale + 3) / 4;
+          context.scale(xScale, 1.2*(2 - yScale));
+          context.fillText(box.char, 0, 0);
+          context.restore();
+          x += xScale * box.width;
+        } else {
+          context.fillText(box.char, x, layout.yZero + y);
+          x += box.width;
+        }
       }
     }
   }
@@ -92,10 +97,20 @@ var WavyText = (function () {
     }
   }
 
-  function invert() {
-    colors.background = invertButton.style.color = colors[inversion.state];
+  function toggleWarp() {
+    if (layout.text.warp) {
+      layout.text.warp = false;
+      buttons.warp.innerHTML = 'do warp';
+    } else {
+      layout.text.warp = true;
+      buttons.warp.innerHTML = 'no warp';
+    }
+  }
+
+  function invertColors() {
+    colors.background = buttons.invert.style.color = colors[inversion.state];
     inversion.state = inversion[inversion.state];
-    colors.text = invertButton.style.background = colors[inversion.state];
+    colors.text = buttons.invert.style.background = colors[inversion.state];
     paint();
   }
 
@@ -141,6 +156,10 @@ var WavyText = (function () {
         M.makeUnselectable(elements[i]);
       }
     });
+    buttons.warp = document.getElementById('warpButton');
+    buttons.warp.onclick = toggleWarp;
+    layout.text.warp = false;
+    toggleWarp();
     buttons.pause = document.getElementById('pauseButton');
     buttons.pause.onclick = canvas.onclick = pause;
     speed.exponent = 0;
@@ -152,9 +171,9 @@ var WavyText = (function () {
       modifySpeed(-1);
     };
     buttons.invert = document.getElementById('invertButton');
-    buttons.invert.onclick = invert;
+    buttons.invert.onclick = invertColors;
     inversion.state = 'pale';
-    invert();
+    invertColors();
     startAnimation();
   }
 
