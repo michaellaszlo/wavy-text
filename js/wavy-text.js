@@ -21,7 +21,7 @@ var WavyText = (function () {
         //  exponent initialized to 0. The user clicks buttons to increment
         //  or decrement exponent by 1.
         factor: 1.1,
-        coefficient: 2
+        coefficient: 1.5
       },
       layout = {
         width: 830,
@@ -67,9 +67,11 @@ var WavyText = (function () {
           yScale = Math.abs(y / layout.amplitude);
           xScale = (yScale + 3) / 4;
           context.scale(xScale, 1.2*(2 - yScale));
-          context.fillText(box.char, 0, 0);
+          context.fillText(box.char, (1 - xScale)*box.width, 0);
           context.restore();
-          x += xScale * box.width;
+          // To scale inter-character spacing according to xScale:
+          //  x += xScale * box.width;
+          x += box.width;
         } else {
           context.fillText(box.char, x, layout.yZero + y);
           x += box.width;
@@ -139,10 +141,12 @@ var WavyText = (function () {
     context.font = "32px 'Droid Sans Mono', monospace";
     textWidth = 0;
     characterBoxes = layout.text.value.split('').map(function (char) {
-      var width = context.measureText(char).width,
-          box = { char: char, width: width };
+      var width = context.measureText(char).width;
+      if (char == ' ') {
+        width *= 2/3;
+      }
       textWidth += width;
-      return box;
+      return { char: char, width: width };
     });
     // Set layout parameters.
     layout.text.width = textWidth;
